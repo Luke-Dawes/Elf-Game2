@@ -7,7 +7,7 @@ wn.config(background='lightblue')
 
 class game:
     def __init__(self):
-        pass
+        print("Hello World")
 
     def update(self):
         pass
