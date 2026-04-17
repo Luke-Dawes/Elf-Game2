@@ -1,13 +1,14 @@
 import tkinter as tk
+import time
 
 wn = tk.Tk()
-wn.geometry('500x350')
+wn.geometry('800x350')
 wn.title('Elf Game 2')
 wn.config(background='lightblue')
 
 class game:
     def __init__(self):
-        print("Hello World")
+        pass
 
     def update(self):
         pass
@@ -15,12 +16,18 @@ class game:
     def clicked(self):
         print("clicked")
 
-    def setup(self):
-        b1 = tk.Button(wn, width=30, pady=40, text='Click Me', command=self.clicked)
-        b1.grid(row=0, column=0)
-
+    def setup_ui(self):
+        n1 = tk.Entry(wn, width=30, text='Enter team name 1')
+        n2 = tk.Entry(wn, width=30, text='Enter team name 2')
+        n3 = tk.Entry(wn, width=30, text='Enter team name 3')
+        n4 = tk.Entry(wn, width=30, text='Enter team name 4')
+        n1.grid(row=0, column=0)
+        n2.grid(row=0, column=1)
+        n3.grid(row=0, column=2)
+        n4.grid(row=0, column=3)
         
 game = game()
-game.setup()
+game.setup_ui()
 
 wn.mainloop()
+
