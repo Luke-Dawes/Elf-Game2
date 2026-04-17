@@ -5,3 +5,4 @@ class Team:
         self.elves = 12
         self.money = 500
         self.motivation = 0 #maybe?
+        
