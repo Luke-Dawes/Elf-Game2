@@ -85,8 +85,14 @@ class ElfGame:
             return
 
         # Calculate Earnings
-        round_income = sum(allocations[i] * self.locations[i]["payout"] for i in range(4)) #self.locations is still a dictonary
-        team.money += round_income #team.money changed from team["money"]
+        team.sentElves = {
+            self.locations[i]["name"]: allocations[i]
+            for i in range(len(self.locations))
+        }
+
+        #!delayed this untill the end so it calculates it all together  
+        #round_income = sum(allocations[i] * self.locations[i]["payout"] for i in range(4)) #self.locations is still a dictonary
+        #team.money += round_income #team.money changed from team["money"]
 
         # Reset entries for next team
         for entry in self.elf_entries:
@@ -96,11 +102,46 @@ class ElfGame:
         # Move to next team or next turn
         self.current_team_idx += 1
         if self.current_team_idx >= self.num_teams:
+
+            #show rewards 
+            self.rewards()
+
+            #reset for the next turn
             self.current_team_idx = 0
             self.current_turn += 1
             messagebox.showinfo("New Round", f"Round {self.current_turn} begins!")
 
         self.refresh_ui()
+
+    def rewards(self, snowStorm: bool=False): #process the money, maybe show a graphic of a snow storm etc so its all together at the end
+
+        for team in self.teams_data: #for each team
+            totalInc = 0
+
+            for loc in self.locations: #get the name and the amount of money
+                location = loc["name"]
+                reward = loc["payout"]
+
+                elvesSent = team.sentElves.get(location) #get how many elves sent to each location
+
+                if snowStorm and location == "Deep Forrest":
+                    totalInc += 0
+
+                elif snowStorm and location == "Mountains":
+                    totalInc += 0
+                    team.elves -= elvesSent
+
+                else:
+                    totalInc += elvesSent * reward
+            
+            team.money += totalInc
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()
