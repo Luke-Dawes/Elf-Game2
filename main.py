@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import messagebox
 from TeamClass import Team
 import random
-import time
 
 class ElfGame:
     def __init__(self, root):
@@ -120,8 +119,6 @@ class ElfGame:
 
 
     #SNOW
-    #https://www.tutorialspoint.com/article/how-to-clear-tkinter-canvas#:~:text=In%20order%20to%20clear%20a,present%20in%20a%20Tkinter%20frame. 
-    #https://stackoverflow.com/questions/45388420/python-3-tkinter-how-to-use-after-on-canvas-graphics 
     def moveSnow(self) -> None:
         for particile in self.snowList: 
             self.canvas.move(particile, 0, 1) #makes the y coordinate of particle decrease by 1
@@ -154,12 +151,21 @@ class ElfGame:
         self.moveSnow() #call the move snow func once, thought it runs async
 
         self.root.after(4000, self.stopSnow) #after like 3 seconds it calls stop snow which deletes everthting
+        self.root.after(4005, self.create_widgets)
+        self.root.after(4006, self.refresh_ui)
+        
+
+    def deleteWidgets(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
         
 
 
 
 
     def rewards(self, snowStorm: bool=True) -> None: #process the money, maybe show a graphic of a snow storm etc so its all together at the end
+
+        self.deleteWidgets()
 
         if snowStorm: #only runs if there is a snowstorm
             self.makeSnow()
