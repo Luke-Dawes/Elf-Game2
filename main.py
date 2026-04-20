@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
 from TeamClass import Team
 import random
 
@@ -26,11 +26,23 @@ class ElfGame:
         ]
 
         # Team Data: [Money, Total Elves]
-        self.teams_data = [Team(f"Team {i+1}") for i in range(4)] #this is now a list of teams
+        #self.teams_data = [Team(f"Team {i+1}") for i in range(4)] #this is now a list of teams
         #self.teams_data = [{"money": 0, "elves": 10, "name": f"Team {i+1}"} for i in range(4)]
+        self.teams_data = []
         
+        self.createTeams()
+
         self.create_widgets()
         self.refresh_ui()
+
+    def createTeams(self): #added func to add a name
+        for i in range(4):
+            while True: #handle for None 
+                temp = simpledialog.askstring("Name", f"What is the name of team {i}") 
+                if temp:
+                    break
+            self.teams_data.append(Team(temp))
+
 
     def create_widgets(self) -> None:
         # Header Info
@@ -118,13 +130,13 @@ class ElfGame:
                 self.locations.append({"name": "Mountains", "payout": 50})
                 self.deleteWidgets()
                 self.create_widgets()
-                self.refresh_ui()
+                
             
             elif self.current_turn == 14:
                 self.locations.append({"name": "Volcano", "payout": 100})
                 self.deleteWidgets()
                 self.create_widgets()
-                self.refresh_ui()
+                
 
             messagebox.showinfo("New Round", f"Round {self.current_turn} begins!")
 
@@ -148,7 +160,7 @@ class ElfGame:
 
     def makeSnow(self) -> None:
 
-        self.canvas = tk.Canvas(self.root, width=700, height=600, bg='Black') #BROKEN ===================================== doesnt fully cover the screen
+        self.canvas = tk.Canvas(self.root, width=700, height=600, bg='Black') 
         self.canvas.pack() #display the canvas
 
         self.snowList = []
@@ -171,9 +183,6 @@ class ElfGame:
     def deleteWidgets(self):
         for widget in self.root.winfo_children():
             widget.destroy()
-        
-
-
 
 
     def rewards(self, snowStorm: bool=False) -> None: #process the money, maybe show a graphic of a snow storm etc so its all together at the end
