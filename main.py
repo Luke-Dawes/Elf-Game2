@@ -14,6 +14,8 @@ class ElfGame:
         self.current_team_idx = 0
         self.num_teams = 4
 
+        self.waitingForName = tk.BooleanVar(value=False)
+
         #snow
         self.snowList = []
         
@@ -30,27 +32,45 @@ class ElfGame:
         #self.teams_data = [{"money": 0, "elves": 10, "name": f"Team {i+1}"} for i in range(4)]
         self.teams_data = []
         
-        while not self.createTeams():
-            continue
-        self.createTeamsSeperate()
+        self.createTeams()
+        self.root.wait_variable(self.waitingForName) #a hold vairable so tkinter runs and allows input
 
         self.create_widgets()
         self.refresh_ui()
 
-    def createTeams(self): #added func to add a name
-        for i in range(1,5):
-            while True: #handle for None 
-                temp = simpledialog.askstring("Name", f"What is the name of team {i}") 
-                if temp:
-                    break
-            self.teams_data.append(Team(temp))
+    #def createTeamsSeperateWindow(self): #added func to add a name
+    #    for i in range(1,5):
+    #        while True: #handle for None 
+    #            temp = simpledialog.askstring("Name", f"What is the name of team {i}") 
+    #            if temp:
+    #                break
+    #        self.teams_data.append(Team(temp))
 
-    def createTeams(self) -> bool:
-        words = tk.LabelFrame(self.root, text="team1", font=("arial", 12))
-        words.pack()
-        name = tk.Entry(words, width=10)
-        #finish this 
-        return False
+    def createTeams(self): #code from website
+        self.frame = tk.Frame(self.root) #get the frame
+        self.frame.pack(pady=50) #add it to the screen
+        tk.Label(self.frame, text="Enter Team Names", font=("Arial", 14, "bold")).pack(pady=10) #add a lavel for a title
+        self.names = [] #add temp names
+
+        for i in range(4): #4
+            f = tk.Frame(self.frame) #i guess we assign self.frame to f
+            f.pack() #pack it?
+            tk.Label(f, text=f"Team {i+1}:").pack(side="left") 
+            ent = tk.Entry(f) #input
+            ent.insert(0, f"Team {i+1}") #whats in the box
+            ent.pack(side="left", padx=5)
+            self.names.append(ent) #add it to the thing
+        btn = tk.Button(self.frame, text="Start Game", command=self.saveTeamsAndStart) #on press run saveTeamsAndStart
+        btn.pack(pady=20)
+
+    def saveTeamsAndStart(self):
+        for name in self.names:
+            teamName = name.get().strip() or "unknwon"
+            self.teams_data.append(Team(teamName))
+        
+        self.frame.destroy()
+        self.waitingForName.set(True)
+
 
 
     def create_widgets(self) -> None:
