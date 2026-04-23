@@ -144,7 +144,7 @@ class ElfGame:
             self.leaderboard_labels.append(lbl)
 
     def refresh_ui(self) -> None:
-        team = self.teams_data[self.current_team_idx]
+        if self.current_team_idx <= self.num_teams:   team = self.teams_data[self.current_team_idx]
         self.header_label.config(text=f"Turn {self.current_turn}: {team.name}'s Move") #instead of using team["name"] it's now a class syntax
         self.team_info_label.config(text=f"Available Elves: {team.elves} | Current Money: £{team.money}") #changed here as well
         
