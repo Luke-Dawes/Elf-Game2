@@ -42,7 +42,7 @@ class ElfGame:
 
         #snow
         self.snowList = []
-        self.isBlizzardDone = tk.BooleanVar(value=False)
+        self.isBlizzardDone = tk.BooleanVar(value=True)
         
         # Location Multipliers (Money earned per elf)
         self.locations = [
@@ -201,23 +201,29 @@ class ElfGame:
 
         if self.current_team_idx >= self.num_teams:
             
-
             #show rewards 
             
             for team in self.teams_data:
                 team.money -= team.payed
                 team.motivation += team.payed * 0.0005
 
-            
-
-            #reset for the next turn
             self.current_team_idx = 0
             self.current_turn += 1
 
-            self.rewards(self.day.determineBlizzard())
+            self.blizzard_happended = self.day.determineBlizzard()
+
+            if not self.blizzard_happended:
+                self.isBlizzardDone.set(True)
+
+            self.rewards(self.blizzard_happended)
+            
+            if self.blizzard_happended:
+                self.root.wait_variable(self.isBlizzardDone)
+
+            #reset for the next turn
+            
 
             self.day.incrementDay()  # increment day for each new turn
-
 
             self.weather_prompt.destroy() #weather wasnt updating unless its destroyed and remade
             self.weather_prompt = tk.Label(self.weather_display, text=self.day.currentWeather["prompt"]) #removing destroy just adds new labels
@@ -236,7 +242,6 @@ class ElfGame:
                 
         self.refresh_ui()
 
-
     #SNOW
     def moveSnow(self) -> None:
         for particle in self.snowList:
@@ -249,6 +254,7 @@ class ElfGame:
             self.canvas.delete(snow) #deletes the snow from the canvas
         self.snowList.clear() #clears the list
         self.canvas.destroy() #destroys the canvas (the background)
+        self.isBlizzardDone.set(True)
 
     def makeSnow(self) -> None:
 
@@ -271,7 +277,7 @@ class ElfGame:
         self.root.after(4000, self.stopSnow) #after like 3 seconds it calls stop snow which deletes everything
         self.root.after(4005, self.create_widgets) #create the widgets again which have been deleted
         self.root.after(4020, self.refresh_ui) #refresh them so they contain the correct data
-        self.isBlizzardDone = True
+        
         
 
     def deleteWidgets(self):
@@ -279,13 +285,14 @@ class ElfGame:
             widget.destroy()
 
 
-    def rewards(self, snowStorm: bool=True) -> None: #process the money, maybe show a graphic of a snow storm etc. so it's all together at the end
+    def rewards(self, snowStorm: bool) -> None: #process the money, maybe show a graphic of a snow storm etc. so it's all together at the end
 
         if snowStorm: #only runs if there is a snowstorm
+            self.isBlizzardDone.set(False)
             self.deleteWidgets() 
             self.makeSnow()
             self.day.lastBlizzard = True #resets luck meter
-            self.isBlizzardDone = False
+            
 
         rewardMessage = ""
 
@@ -313,10 +320,10 @@ class ElfGame:
                 else:
                     tempInc += elvesSent * reward
                 
-                if loc == "Mountains" and snowStorm:
+                if location == "Mountains" and snowStorm:
                     rewardMessage += f"☆ {team.name} sent {elvesSent} to {location} and lost all of them! ☆ \n"
 
-                elif loc == "Volcano" and not snowStorm:
+                elif location == "Volcano" and not snowStorm:
                     rewardMessage += f"☆ {team.name} sent {elvesSent} to {location} and lost all of them! ☆ \n"
 
                 else:
@@ -338,7 +345,7 @@ class ElfGame:
             rewardMessage += "\n"
         
         messagebox.showinfo("rewards", rewardMessage)
-        self.root.wait_variable(self.isBlizzardDone)
+        
 
 
 
