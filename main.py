@@ -199,7 +199,7 @@ class ElfGame:
         print(self.day.currentWeather)
 
         if self.current_team_idx >= self.num_teams:
-            self.day.incrementDay()  # increment day for each new turn
+            
 
             #show rewards 
             
@@ -207,11 +207,15 @@ class ElfGame:
                 team.money -= team.payed
                 team.motivation += team.payed * 0.0005
 
-            self.rewards(self.day.determineBlizzard())
+            
 
             #reset for the next turn
             self.current_team_idx = 0
             self.current_turn += 1
+
+            self.rewards(self.day.determineBlizzard())
+
+            self.day.incrementDay()  # increment day for each new turn
 
             if self.current_turn == 7:
                 self.locations.append({"name": "Mountains", "payout": 50})

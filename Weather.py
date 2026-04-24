@@ -40,13 +40,15 @@ class Day:
         #tweak result probability
         #increase until ie 90% blizzard chance if example 14 non in a row
         #return outcome dependent on blizzard or not - blizzard = true, non = false
-
+        print(self.currentWeather["name"], "is chosen")
         chance = self.currentWeather["probability"]
         
-        if self.lastBlizzard: self.concurrentSun = 0
-        else: self.concurrentSun += 1 
-
-        chance += ((self.concurrentSun - 1) * 0.1)
+        if self.lastBlizzard:
+            self.concurrentSun = 0
+        else:
+            self.concurrentSun += 1 
+            chance += ((self.concurrentSun - 1) * 0.1)
+            
         if chance > 0.9: chance = 0.9
 
         return self.probabilityGenerator(chance=chance)
