@@ -2,9 +2,8 @@ import tkinter as tk
 import random
 
 from tkinter import messagebox
-from TeamClass import Team
-from Weather import Day
-
+from team import Team
+from weather import Day
 
 
 """
@@ -35,14 +34,13 @@ class ElfGame:
         self.current_team_idx = 0
         self.num_teams = 4
 
-        self.waitingForName = tk.BooleanVar(value=False)
-        self.payedToElves = 0
+        self.waiting_for_name = tk.BooleanVar(value=False)
         self.day = Day()
-        self.day.incrementDay()
+        self.day.increment_day()
 
         #snow
-        self.snowList = []
-        self.isBlizzardDone = tk.BooleanVar(value=True)
+        self.snow_list = []
+        self.is_blizzard_done = tk.BooleanVar(value=True)
         
         # Location Multipliers (Money earned per elf)
         self.locations = [
@@ -57,8 +55,8 @@ class ElfGame:
         #self.teams_data = [{"money": 0, "elves": 10, "name": f"Team {i+1}"} for i in range(4)]
         self.teams_data = []
         
-        self.createTeams()
-        self.root.wait_variable(self.waitingForName) #a hold variable so tkinter runs and allows input
+        self.create_teams()
+        self.root.wait_variable(self.waiting_for_name) #a hold variable so tkinter runs and allows input
 
         self.create_widgets()
         self.refresh_ui()
@@ -71,7 +69,7 @@ class ElfGame:
     #                break
     #        self.teams_data.append(Team(temp))
 
-    def createTeams(self): #code from website
+    def create_teams(self): #code from website
         self.frame = tk.Frame(self.root) #get the frame
         self.frame.pack(pady=50) #add it to the screen
         tk.Label(self.frame, text="Enter Team Names", font=("Arial", 14, "bold")).pack(pady=10) #add a label for a title
@@ -85,16 +83,16 @@ class ElfGame:
             ent.insert(0, f"Team {i+1}") #what's in the box
             ent.pack(side="left", padx=5)
             self.names.append(ent) #add it to the thing
-        btn = tk.Button(self.frame, text="Start Game", command=self.saveTeamsAndStart) #on press run saveTeamsAndStart
+        btn = tk.Button(self.frame, text="Start Game", command=self.save_teams_and_start) #on press run saveTeamsAndStart
         btn.pack(pady=20)
 
-    def saveTeamsAndStart(self):
+    def save_teams_and_start(self):
         for name in self.names:
             teamName = name.get().strip() or "unknown"
             self.teams_data.append(Team(teamName))
         
         self.frame.destroy()
-        self.waitingForName.set(True)
+        self.waiting_for_name.set(True)
 
 
 
@@ -119,9 +117,9 @@ class ElfGame:
             self.elf_entries.append(entry)
 
         tk.Label(self.input_frame, text="Pay Elves (£)").grid(row=5, column=0, sticky='w',pady=5)
-        self.payEntry = tk.Entry(self.input_frame, width=10)
-        self.payEntry.insert(0, "0")
-        self.payEntry.grid(row=5, column=1, padx=10)
+        self.pay_entry = tk.Entry(self.input_frame, width=10)
+        self.pay_entry.insert(0, "0")
+        self.pay_entry.grid(row=5, column=1, padx=10)
 
         # Submit Button
         self.submit_btn = tk.Button(self.root, text="Confirm Turn", command=self.process_turn, bg="green", fg="white", font=("Arial", 12, "bold"))
@@ -131,7 +129,7 @@ class ElfGame:
         self.weather_display = tk.LabelFrame(self.root, text= "Weather", padx=10, pady=10)
         self.weather_display.pack(fill="both", padx=20, pady=20)
 
-        self.weather_prompt = tk.Label(self.weather_display, text=self.day.currentWeather["prompt"])
+        self.weather_prompt = tk.Label(self.weather_display, text=self.day.current_weather["prompt"])
         self.weather_prompt.pack(fill="both")
 
         # Leaderboard
@@ -159,7 +157,7 @@ class ElfGame:
         team = self.teams_data[self.current_team_idx]
         try:
             allocations = [int(e.get()) for e in self.elf_entries]
-            paying = int(self.payEntry.get())
+            paying = int(self.pay_entry.get())
         except ValueError:
             messagebox.showerror("Error", "Please enter valid numbers.")
             return
@@ -174,7 +172,7 @@ class ElfGame:
             return
 
         # Calculate Earnings
-        team.sentElves = {
+        team.sent_elves = {
             self.locations[i]["name"]: allocations[i]
             for i in range(len(self.locations))
         }
@@ -191,13 +189,13 @@ class ElfGame:
             entry.delete(0, tk.END)
             entry.insert(0, "0")
 
-        self.payEntry.delete(0, tk.END)
-        self.payEntry.insert(0, "0")
+        self.pay_entry.delete(0, tk.END)
+        self.pay_entry.insert(0, "0")
         
 
         # Move to next team or next turn
         self.current_team_idx += 1
-        print(self.day.currentWeather)
+        print(self.day.current_weather)
 
         if self.current_team_idx >= self.num_teams:
             
@@ -210,36 +208,36 @@ class ElfGame:
             self.current_team_idx = 0
             self.current_turn += 1
 
-            self.blizzard_happended = self.day.determineBlizzard()
+            self.blizzard_happended = self.day.determine_blizzard()
 
             if not self.blizzard_happended:
-                self.isBlizzardDone.set(True)
+                self.is_blizzard_done.set(True)
 
             self.rewards(self.blizzard_happended)
             
             if self.blizzard_happended:
-                self.root.wait_variable(self.isBlizzardDone)
+                self.root.wait_variable(self.is_blizzard_done)
 
             #reset for the next turn
             
 
-            self.day.incrementDay()  # increment day for each new turn
+            self.day.increment_day()  # increment day for each new turn
 
             self.weather_prompt.destroy() #weather wasnt updating unless its destroyed and remade
-            self.weather_prompt = tk.Label(self.weather_display, text=self.day.currentWeather["prompt"]) #removing destroy just adds new labels
+            self.weather_prompt = tk.Label(self.weather_display, text=self.day.current_weather["prompt"]) #removing destroy just adds new labels
             self.weather_prompt.pack(fill="both")
 
             
 
             if self.current_turn == 7:
                 self.locations.append({"name": "Mountains", "payout": 50})
-                self.deleteWidgets()
+                self.delete_widgets()
                 self.create_widgets()
                 
             
             elif self.current_turn == 14:
                 self.locations.append({"name": "Volcano", "payout": 100})
-                self.deleteWidgets()
+                self.delete_widgets()
                 self.create_widgets()
 
                 
@@ -248,27 +246,27 @@ class ElfGame:
     #SNOW
 
     def blizzard_done(self):
-        self.isBlizzardDone.set(True)
+        self.is_blizzard_done.set(True)
 
-    def moveSnow(self) -> None:
-        for particle in self.snowList:
+    def move_snow(self) -> None:
+        for particle in self.snow_list:
             self.canvas.move(particle, 0, 1) #makes the y coordinate of particle decrease by 1
             
-        self.root.after(33, self.moveSnow) #async (keeps this function running every .3) but lets the game continue
+        self.root.after(33, self.move_snow) #async (keeps this function running every .3) but lets the game continue
 
-    def stopSnow(self) -> None: #deletes all the snow
-        for snow in self.snowList: 
+    def stop_snow(self) -> None: #deletes all the snow
+        for snow in self.snow_list:
             self.canvas.delete(snow) #deletes the snow from the canvas
-        self.snowList.clear() #clears the list
+        self.snow_list.clear() #clears the list
         self.canvas.destroy() #destroys the canvas (the background)
 
-    def makeSnow(self) -> None:
+    def make_snow(self) -> None:
 
         self.canvas = tk.Canvas(self.root, width=700, height=600, bg='Black') 
         self.canvas.config(width=1920,height=1080)
         self.canvas.pack() #display the canvas
 
-        self.snowList = []
+        self.snow_list = []
         for _ in range(50):
             x = random.randint(0,700)
             y = random.randint(0,500)
@@ -276,18 +274,18 @@ class ElfGame:
 
             snow = self.canvas.create_rectangle(x, y, x + size, y + size, fill='white', outline='') #ceate rectangles for snow
 
-            self.snowList.append(snow) #add it to the list
+            self.snow_list.append(snow) #add it to the list
         
-        self.moveSnow() #call the move snow func once, thought it runs async
+        self.move_snow() #call the move snow func once, thought it runs async
 
-        self.root.after(4000, self.stopSnow) #after like 3 seconds it calls stop snow which deletes everything
+        self.root.after(4000, self.stop_snow) #after like 3 seconds it calls stop snow which deletes everything
         #self.root.after(4005, self.create_widgets) #create the widgets again which have been deleted
         #self.root.after(4020, self.refresh_ui) #refresh them so they contain the correct data
         self.root.after(4030, self.blizzard_done)
         
         
 
-    def deleteWidgets(self):
+    def delete_widgets(self):
         for widget in self.root.winfo_children():
             widget.destroy()
 
@@ -297,10 +295,10 @@ class ElfGame:
         #snowStorm = True if self.current_turn == 7 else False
 
         if snowStorm: #only runs if there is a snowstorm
-            self.isBlizzardDone.set(False)
-            self.deleteWidgets() 
-            self.makeSnow()
-            self.day.lastBlizzard = True #resets luck meter
+            self.is_blizzard_done.set(False)
+            self.delete_widgets()
+            self.make_snow()
+            self.day.last_blizzard = True #resets luck meter
             self.create_widgets()
             self.refresh_ui()
             
@@ -315,7 +313,7 @@ class ElfGame:
                 location = loc["name"]
                 reward = loc["payout"]
 
-                elvesSent = team.sentElves.get(location) #get how many elves sent to each location
+                elvesSent = team.sent_elves.get(location) #get how many elves sent to each location
 
                 if snowStorm and location == "Deep Forest":
                     tempInc += 0
