@@ -155,6 +155,8 @@ class ElfGame:
 
     def process_turn(self) -> None:
         team = self.teams_data[self.current_team_idx]
+
+        # ===== PROCESS INPUTS =====
         try:
             allocations = [int(e.get()) for e in self.elf_entries]
             paying = int(self.pay_entry.get())
@@ -171,14 +173,13 @@ class ElfGame:
             messagebox.showwarning("Warning", f"You only have {team.elves} elves!") #here
             return
 
-        # Calculate Earnings
-        team.sent_elves = {
+        # ===== PROCESS LOGIC =====
+        team.sent_elves = {  # document which elves where, for calculating earnings
             self.locations[i]["name"]: allocations[i]
             for i in range(len(self.locations))
         }
 
         team.payed = paying
-        
 
         #!delayed this until the end so it calculates it all together
         #round_income = sum(allocations[i] * self.locations[i]["payout"] for i in range(4)) #self.locations is still a dictionary
@@ -191,7 +192,6 @@ class ElfGame:
 
         self.pay_entry.delete(0, tk.END)
         self.pay_entry.insert(0, "0")
-        
 
         # Move to next team or next turn
         self.current_team_idx += 1
@@ -199,8 +199,7 @@ class ElfGame:
 
         if self.current_team_idx >= self.num_teams:
             
-            #show rewards 
-            
+            #show rewards
             for team in self.teams_data:
                 team.money -= team.payed
                 team.motivation += team.payed * 0.0005
@@ -219,8 +218,6 @@ class ElfGame:
                 self.root.wait_variable(self.is_blizzard_done)
 
             #reset for the next turn
-            
-
             self.day.increment_day()  # increment day for each new turn
 
             self.weather_prompt.destroy() #weather wasnt updating unless its destroyed and remade
@@ -239,65 +236,19 @@ class ElfGame:
                 
         self.refresh_ui()
 
-    # ===== SNOW =====
-
     def blizzard_done(self):
         self.is_blizzard_done.set(True)
-
-    '''def move_snow(self) -> None:
-        for particle in self.snow_list:
-            self.canvas.move(particle, 0, 1) #makes the y coordinate of particle decrease by 1
-            
-        self.root.after(33, self.move_snow) #async (keeps this function running every .3) but lets the game continue
-
-    def stop_snow(self) -> None: #deletes all the snow
-        for snow in self.snow_list:
-            self.canvas.delete(snow) #deletes the snow from the canvas
-        self.snow_list.clear() #clears the list
-        self.canvas.destroy() #destroys the canvas (the background)
-
-    def make_snow(self) -> None:
-
-        self.canvas = tk.Canvas(self.root, width=700, height=600, bg='Black') 
-        self.canvas.config(width=1920,height=1080)
-        self.canvas.pack() #display the canvas
-
-        self.snow_list = []
-        for _ in range(50):
-            x = random.randint(0,700)
-            y = random.randint(0,500)
-            size = 5
-
-            snow = self.canvas.create_rectangle(x, y, x + size, y + size, fill='white', outline='')  # create rectangles for snow
-
-            self.snow_list.append(snow) #add it to the list
-        
-        self.move_snow() #call the move snow func once, thought it runs async
-
-        self.root.after(4000, self.stop_snow) #after like 3 seconds it calls stop snow which deletes everything
-        #self.root.after(4005, self.create_widgets) #create the widgets again which have been deleted
-        #self.root.after(4020, self.refresh_ui) #refresh them so they contain the correct data
-        self.root.after(4030, self.blizzard_done)'''
 
     def delete_widgets(self):
         for widget in self.root.winfo_children():
             widget.destroy()
 
-    def rewards(self, snowStorm: bool) -> None: #process the money, maybe show a graphic of a snow storm etc. so it's all together at the end
+    def rewards(self, snowStorm: bool) -> None:
+        # process the money, maybe show a graphic of a snow storm etc. so it's all together at the end
+        # snowStorm = True if self.current_turn == 7 else False
 
-        #snowStorm = True if self.current_turn == 7 else False
-
-        if snowStorm: #only runs if there is a snowstorm
-            self.is_blizzard_done.set(False)
-            self.delete_widgets()
-            animation = SnowAnimation(self.root)
-            animation.play()
-            self.is_blizzard_done.set(True)
-            #self.make_snow()
-            self.day.last_blizzard = True #resets luck meter
-            self.create_widgets()
-            self.refresh_ui()
-            
+        if snowStorm:  # only runs if there is a snowstorm
+            self.process_snowstorm()
 
         rewardMessage = ""
 
@@ -311,26 +262,21 @@ class ElfGame:
 
                 elvesSent = team.sent_elves.get(location) #get how many elves sent to each location
 
+                # calculate money
                 if snowStorm and location == "Deep Forest":
-                    tempInc += 0
-
+                    pass
                 elif snowStorm and location == "Mountains":
-                    tempInc += 0
                     team.elves -= elvesSent
-
                 elif not snowStorm and location == "Volcano":
                     team.elves -= elvesSent
-                    tempInc += 0
-
                 else:
                     tempInc += elvesSent * reward
-                
+
+                # confirm what happened to elves
                 if location == "Mountains" and snowStorm:
                     rewardMessage += f"☆ {team.name} sent {elvesSent} to {location} and lost all of them! ☆ \n"
-
                 elif location == "Volcano" and not snowStorm:
                     rewardMessage += f"☆ {team.name} sent {elvesSent} to {location} and lost all of them! ☆ \n"
-
                 else:
                     rewardMessage += f"☆ {team.name} sent {elvesSent} to {location} and earned £{tempInc} ☆ \n"
                 
@@ -348,6 +294,18 @@ class ElfGame:
             rewardMessage += "\n"
         
         messagebox.showinfo("rewards", rewardMessage)
+        self.refresh_ui()
+
+    def process_snowstorm(self):
+        self.is_blizzard_done.set(False)
+        self.delete_widgets()
+
+        animation = SnowAnimation(self.root)
+        animation.play()
+        self.is_blizzard_done.set(True)
+
+        self.day.last_blizzard = True  # resets luck meter
+        self.create_widgets()
         self.refresh_ui()
 
 
