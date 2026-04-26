@@ -5,6 +5,7 @@ import random
 class SnowAnimation:
     def __init__(self, root):
         self.root = root
+        self.canvas = None
 
     def move_snow(self) -> None:
         for particle in self.snow_list:
@@ -19,15 +20,19 @@ class SnowAnimation:
         self.canvas.destroy()  # destroys the canvas (the background)
 
     def play(self) -> None:
-        self.canvas = tk.Canvas(self.root, width=700, height=600, bg='Black')
-        self.canvas.config(width=1920, height=1080)
-        self.canvas.pack()  # display the canvas
+        # get current window size
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+
+        # canvas for animation
+        self.canvas = tk.Canvas(self.root, width=width, height=height, bg='Black')
+        self.canvas.pack()
 
         self.snow_list = []
         for _ in range(50):
-            x = random.randint(0, 700)
-            y = random.randint(0, 500)
             size = 5
+            x = random.randint(0, width - size)
+            y = random.randint(0, height - size)
 
             snow = self.canvas.create_rectangle(x, y, x + size, y + size, fill='white',
                                                 outline='')  # create rectangles for snow
@@ -36,7 +41,4 @@ class SnowAnimation:
 
         self.move_snow()  # call the move snow func once, thought it runs async
 
-        self.root.after(4000, self.stop_snow)  # after like 3 seconds it calls stop snow which deletes everything
-        # self.root.after(4005, self.create_widgets) #create the widgets again which have been deleted
-        # self.root.after(4020, self.refresh_ui) #refresh them so they contain the correct data
-        # self.root.after(4030, self.blizzard_done)
+        self.root.after(4000, self.stop_snow)  # animation for 4s
